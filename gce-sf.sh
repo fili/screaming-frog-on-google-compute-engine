@@ -1,8 +1,10 @@
 #!/bin/bash
 set -e
-version="5"
+set -o allexport
+version="6"
 while [[ "$#" > 0 ]]; do case $1 in
   -b|--beta) beta=1; shift;;
+  -r|--reset) reset=1; shift;;
   *) echo "Unknown parameter passed: $1"; shift; exit 0;;
 esac; done
 NC="\033[0m"
@@ -33,6 +35,16 @@ if [[ $FREE -lt 62914560 ]]; then               # 10G = 10*1024*1024k
     echo -e "Installation aborted. Check the installation guide!${NC}"
     echo
     exit -1
+fi
+if [ $reset > 0 ]; then
+    echo -e "${ORANGE}Disabling SWAP.${NC}"
+    sudo swapoff -a
+    echo -e "${ORANGE}Removing previous Screaming Frog SEO Spider installation and data.${NC}"
+    sudo rm -rf ~/.ScreamingFrogSEOSpider
+    sudo rm -rf ~/.screamingfrogseospider
+    ! sudo apt-get remove screamingfrogseospider -y
+    echo
+    free -h
 fi
 echo
 echo -e "${GREEN}[Step 1/6] Configure Screaming Frog SEO Spider settings.${NC}"
@@ -150,25 +162,59 @@ PACKAGELIST=(
     curl
     nano
     tmux
+    xvfb
 )
 sudo apt-get install -y ${PACKAGELIST[@]} && sudo apt-get install -f -y
 echo
+echo -e "${GREEN}[Step 2/6] Configuring display for rendering.${NC}"
+echo
+if [ -f /etc/systemd/system/xvfb.service ]; then
+    echo "Display already configured, moving on..."
+else
+    sudo sh -c "echo 'DISPLAY=\":99\"' >> /etc/environment"
+    sudo tee -a /etc/systemd/system/xvfb.service <<EOF
+[Unit]
+Description=X Virtual Frame Buffer Service
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/Xvfb :99 -screen 0 1280x1024x24 -ac +extension GLX +render -noreset -nolisten tcp
+
+[Install]
+WantedBy=multi-user.target
+EOF
+    sudo systemctl enable /etc/systemd/system/xvfb.service
+    sudo systemctl enable xvfb
+    echo "Creating Xvfb service."
+fi
+is_xvfb_running=`ps ax | grep -v grep | grep Xvfb | wc -l`
+if [ $is_xvfb_running -eq 0 ]; then
+    sudo systemctl daemon-reload
+    sudo systemctl start xvfb
+    echo "Starting Xvfb service."
+fi
+port_number=`echo $DISPLAY`
+if [ $port_number != :99 ]; then
+    source /etc/environment
+    echo "Enabling DISPLAY."
+fi
+echo
 if [ $beta > 0 ]; then
-    echo -e "${ORANGE}[Step 2/6] Downloading the BETA Screaming Frog SEO Spider installer.${NC}"
+    echo -e "${ORANGE}[Step 3/6] Downloading the BETA Screaming Frog SEO Spider installer.${NC}"
     wget $BETA_URL
 else
-    echo -e "${GREEN}[Step 2/6] Downloading the latest stable Screaming Frog SEO Spider installer.${NC}"
+    echo -e "${GREEN}[Step 3/6] Downloading the latest stable Screaming Frog SEO Spider installer.${NC}"
     wget $(curl -sSL 'https://seo.tl/qlxr' | grep -oP '[^"]+\.deb')
 fi
 echo
-echo -e "${GREEN}[Step 3/6] Installing Screaming Frog SEO Spider.${NC}"
+echo -e "${GREEN}[Step 4/6] Installing Screaming Frog SEO Spider.${NC}"
 sudo dpkg -i screamingfrogseospider_*
 echo
-echo -e "${GREEN}[Step 4/6] Removing installers files.${NC}"
+echo -e "${GREEN}[Step 5/6] Removing installers files.${NC}"
 rm screamingfrogseospider_*
 echo "Done."
 echo
-echo -e "${GREEN}[Step 5/6] Configuring SWAP.${NC}"
+echo -e "${GREEN}[Step 6/6] Configuring SWAP.${NC}"
 PHYMEM=$(free -g|awk '/^Mem:/{print $2}')
 SWAP=$(sudo swapon -s)
 if [[ "$PHYMEM" -lt "50"  &&  -z "$SWAP" ]]; then
