@@ -1,17 +1,19 @@
 #!/bin/bash
 set -e
 set -o allexport
-version="6"
-while [[ "$#" > 0 ]]; do case $1 in
+version="7"
+beta=0
+reset=0
+while [[ "$#" -gt 0 ]]; do case $1 in
   -b|--beta) beta=1; shift;;
   -r|--reset) reset=1; shift;;
   *) echo "Unknown parameter passed: $1"; shift; exit 0;;
 esac; done
-NC="\033[0m"
-GREEN="\033[0;32m"
-BLUE="\033[1;34m"
-RED="\033[1;31m"
-ORANGE="\033[0;33m"
+NC="\\033[0m"
+GREEN="\\033[0;32m"
+BLUE="\\033[1;34m"
+RED="\\033[1;31m"
+ORANGE="\\033[0;33m"
 echo -e "${GREEN}"
 echo -e "######################################################"
 echo -e "#      Screaming Frog SEO Spider Install Script      #"
@@ -36,13 +38,14 @@ if [[ $FREE -lt 62914560 ]]; then               # 10G = 10*1024*1024k
     echo
     exit -1
 fi
-if [ $reset > 0 ]; then
+if [ "$reset" -gt 0 ]; then
     echo -e "${ORANGE}Disabling SWAP.${NC}"
     sudo swapoff -a
     echo -e "${ORANGE}Removing previous Screaming Frog SEO Spider installation and data.${NC}"
     sudo rm -rf ~/.ScreamingFrogSEOSpider
     sudo rm -rf ~/.screamingfrogseospider
     ! sudo apt-get remove screamingfrogseospider -y
+    rm screamingfrogseospider_*
     echo
     free -h
 fi
@@ -75,8 +78,8 @@ if [[ ! -f ~/.ScreamingFrogSEOSpider/licence.txt ]]; then
         exit -1
     fi
     touch ~/.ScreamingFrogSEOSpider/licence.txt
-    echo $USERNAME > ~/.ScreamingFrogSEOSpider/licence.txt
-    echo $LICENSEKEY >> ~/.ScreamingFrogSEOSpider/licence.txt
+    echo "$USERNAME" > ~/.ScreamingFrogSEOSpider/licence.txt
+    echo "$LICENSEKEY" >> ~/.ScreamingFrogSEOSpider/licence.txt
     echo
 fi
 if [[ -f ~/.screamingfrogseospider ]]; then
@@ -119,7 +122,7 @@ if [[ ! -f ~/.ScreamingFrogSEOSpider/spider.config ]]; then
     echo "storage.mode=${STORAGEMODE}" >> ~/.ScreamingFrogSEOSpider/spider.config
     echo
 fi
-if [ $beta > 0 ]; then
+if [ "$beta" -gt 0 ]; then
     echo -e "${ORANGE}Enter the URL of the beta version of Screaming Frog SEO Spider.${NC}"
     read -p "URL (without spaces): " BETA_URL
     if [[ $BETA_URL = "" ]] || [[ $BETA_URL = " " ]]; then
@@ -158,13 +161,15 @@ PACKAGELIST=(
     libgtk2.0-0
     libgtk2.0-bin
     libgtk2.0-common
+    libnspr4
+    libnss3
     libxss1
     curl
     nano
     tmux
     xvfb
 )
-sudo apt-get install -y ${PACKAGELIST[@]} && sudo apt-get install -f -y
+sudo apt-get install -y "${PACKAGELIST[@]}" && sudo apt-get install -f -y
 echo
 echo -e "${GREEN}[Step 2/6] Configuring display for rendering.${NC}"
 echo
@@ -187,24 +192,24 @@ EOF
     sudo systemctl enable xvfb
     echo "Creating Xvfb service."
 fi
-is_xvfb_running=`ps ax | grep -v grep | grep Xvfb | wc -l`
-if [ $is_xvfb_running -eq 0 ]; then
+is_xvfb_running=$(ps ax | grep -v grep | grep Xvfb | wc -l)
+if [ "$is_xvfb_running" -eq 0 ]; then
     sudo systemctl daemon-reload
     sudo systemctl start xvfb
     echo "Starting Xvfb service."
 fi
-port_number=`echo $DISPLAY`
-if [ $port_number != :99 ]; then
+port_number=$(echo $DISPLAY)
+if [ "$port_number" != :99 ]; then
     source /etc/environment
     echo "Enabling DISPLAY."
 fi
 echo
-if [ $beta > 0 ]; then
+if [ "$beta" -gt 0 ]; then
     echo -e "${ORANGE}[Step 3/6] Downloading the BETA Screaming Frog SEO Spider installer.${NC}"
-    wget $BETA_URL
+    wget "$BETA_URL"
 else
     echo -e "${GREEN}[Step 3/6] Downloading the latest stable Screaming Frog SEO Spider installer.${NC}"
-    wget $(curl -sSL 'https://seo.tl/qlxr' | grep -oP '[^"]+\.deb')
+    wget "$(curl -sSL 'https://seo.tl/qlxr' | grep -oP '[^"]+\.deb')"
 fi
 echo
 echo -e "${GREEN}[Step 4/6] Installing Screaming Frog SEO Spider.${NC}"
@@ -223,7 +228,7 @@ if [[ "$PHYMEM" -lt "50"  &&  -z "$SWAP" ]]; then
     ls -lh /swapfile
     sudo mkswap /swapfile
     sudo swapon /swapfile
-    echo -e "/swapfile none swap sw 0 0 \n" | sudo tee -a /etc/fstab
+    echo -e "/swapfile none swap sw 0 0 \\n" | sudo tee -a /etc/fstab
     echo "SWAP created."
     echo
 else
