@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 set -o allexport
-version="7"
+version="8"
 beta=0
 reset=0
 while [[ "$#" -gt 0 ]]; do case $1 in
@@ -118,7 +118,7 @@ if [[ ! -f ~/.ScreamingFrogSEOSpider/spider.config ]]; then
         STORAGEMODE=""
     fi
     touch ~/.ScreamingFrogSEOSpider/spider.config
-    echo "eula.accepted=8" > ~/.ScreamingFrogSEOSpider/spider.config
+    echo "eula.accepted=9" > ~/.ScreamingFrogSEOSpider/spider.config
     echo "storage.mode=${STORAGEMODE}" >> ~/.ScreamingFrogSEOSpider/spider.config
     echo
 fi
