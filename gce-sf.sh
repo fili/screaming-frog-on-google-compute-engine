@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 set -o allexport
-version="8"
+version="9"
 beta=0
 reset=0
 while [[ "$#" -gt 0 ]]; do case $1 in
