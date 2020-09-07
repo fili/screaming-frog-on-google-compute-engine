@@ -146,7 +146,7 @@ if [ "$beta" -gt 0 ]; then
     echo
 fi
 echo -e "${GREEN}[Step 1/5] Installing dependencies.${NC}"
-sudo apt-get update && sudo apt-get install dialog apt-utils debconf-set-selections -y
+sudo apt-get update && sudo apt-get install dialog apt-utils -y
 echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections
 sudo apt-get upgrade -y && sudo apt-get autoremove -y
 echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | sudo debconf-set-selections
