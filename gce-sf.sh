@@ -93,9 +93,9 @@ if [[ -f ~/.screamingfrogseospider ]]; then
 fi
 if [[ ! -f ~/.screamingfrogseospider ]]; then
     echo "Type a number to set memory allocation in GB, e.g. 25"
-    read -p "(or leave blank defaults to 50GB): " VIRTUALMEMORY
+    read -p "(or leave blank defaults to 25GB): " VIRTUALMEMORY
     if [[ $VIRTUALMEMORY = "" ]] || [[ $VIRTUALMEMORY = " " ]] || [[ -n ${VIRTUALMEMORY//[0-9]/} ]]; then
-        VIRTUALMEMORY="50"
+        VIRTUALMEMORY="25"
     fi
     touch ~/.screamingfrogseospider
     echo "-Xmx${VIRTUALMEMORY}g" > ~/.screamingfrogseospider
@@ -118,7 +118,7 @@ if [[ ! -f ~/.ScreamingFrogSEOSpider/spider.config ]]; then
         STORAGEMODE=""
     fi
     touch ~/.ScreamingFrogSEOSpider/spider.config
-    echo "eula.accepted=9" > ~/.ScreamingFrogSEOSpider/spider.config
+    echo "eula.accepted=10" > ~/.ScreamingFrogSEOSpider/spider.config
     echo "storage.mode=${STORAGEMODE}" >> ~/.ScreamingFrogSEOSpider/spider.config
     echo
 fi
