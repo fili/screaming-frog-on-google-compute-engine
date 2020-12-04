@@ -277,7 +277,7 @@ sudo ss -lp "sport = :domain"
 echo 
 systemctl status dnsmasq.service
 echo 
-more /etc/dnsmasq.conf
+cat /etc/dnsmasq.conf
 echo 
 EOF
 
