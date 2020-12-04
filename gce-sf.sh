@@ -3,9 +3,11 @@ set -e
 set -o allexport
 version="9"
 beta=0
+blacklist=0
 reset=0
 while [[ "$#" -gt 0 ]]; do case $1 in
   -b|--beta) beta=1; shift;;
+  -bl|--blacklist) blacklist=1; shift;;
   -r|--reset) reset=1; shift;;
   *) echo "Unknown parameter passed: $1"; shift; exit 0;;
 esac; done
@@ -241,6 +243,58 @@ else
     echo
 fi
 free -h
+echo
+if [ "$blacklist" -gt 0 ]; then
+    echo -e "${ORANGE}Enabling Blacklist.${NC}"
+    sudo apt-get install -y dnsmasq iputils-ping resolvconf
+
+    touch ~/blacklist.txt
+    touch ~/update_bl.sh
+
+    sudo tee ~/update_bl.sh <<'EOF'
+#!/bin/bash
+# prepare /etc/dnsmasq.conf with defaults
+instance_name=$(hostname)
+echo -e "listen-address=127.0.0.1" | sudo tee /etc/dnsmasq.conf
+echo -e "bind-interfaces" | sudo tee -a /etc/dnsmasq.conf
+echo -e "no-resolv" | sudo tee -a /etc/dnsmasq.conf
+echo -e "server=8.8.8.8" | sudo tee -a /etc/dnsmasq.conf
+echo -e "server=8.8.4.4" | sudo tee -a /etc/dnsmasq.conf
+echo -e "address=/$(hostname)/127.0.0.1" | sudo tee -a /etc/dnsmasq.conf
+# add specific blacklist rules
+BLACKLIST_FILE="blacklist.txt"
+IFS=$' \t\n' sh -c 'printf "%s" "$IFS"|xxd'
+while IFS=$IFS read -r line
+do
+    [[ -z $line ]] && continue
+    echo -e "address=/$line/127.0.0.2" | sudo tee -a /etc/dnsmasq.conf
+done < "$BLACKLIST_FILE"
+# restart services
+sudo /etc/init.d/dnsmasq restart
+# report status
+echo
+sudo ss -lp "sport = :domain"
+echo 
+systemctl status dnsmasq.service
+echo 
+more /etc/dnsmasq.conf
+echo 
+EOF
+
+    chmod a+x ~/update_bl.sh
+    . ~/update_bl.sh
+
+    # prepare /etc/resolv.conf
+    sudo resolvconf -u
+    # restart services
+    sudo systemctl stop systemd-resolved
+    sudo /etc/init.d/dnsmasq restart
+    sudo systemctl start systemd-resolved
+
+    echo -e "${GREEN} Blacklist enabled."
+    echo -e "${GREEN} To update, change ~/blacklist.txt (one hostname/domain per line, without spaces or tabs)"
+    echo -e "${GREEN} and run '. ~/update_bl.sh'"
+fi
 echo
 echo -e "${GREEN}Installation finished. ✌${NC}"
 echo
