@@ -290,7 +290,7 @@ EOF
     sudo systemctl stop systemd-resolved
     sudo /etc/init.d/dnsmasq restart
     sudo systemctl start systemd-resolved
-
+    echo
     echo -e "${GREEN} Blacklist enabled."
     echo -e "${GREEN} To update, change ~/blacklist.txt (one hostname/domain per line, without spaces or tabs)"
     echo -e "${GREEN} and run '. ~/update_bl.sh'"
