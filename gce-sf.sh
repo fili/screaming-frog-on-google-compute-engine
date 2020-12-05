@@ -248,7 +248,9 @@ if [ "$blacklist" -gt 0 ]; then
     echo -e "${ORANGE}Enabling Blacklist.${NC}"
     sudo apt-get install -y dnsmasq iputils-ping resolvconf
 
-    touch ~/blacklist.txt
+    if [[ ! -f ~/blacklist.txt ]]; then
+      touch ~/blacklist.txt
+    fi
     touch ~/update_bl.sh
 
     sudo tee ~/update_bl.sh <<'EOF'
@@ -291,9 +293,9 @@ EOF
     sudo /etc/init.d/dnsmasq restart
     sudo systemctl start systemd-resolved
     echo
-    echo -e "${GREEN} Blacklist enabled."
-    echo -e "${GREEN} To update, change ~/blacklist.txt (one hostname/domain per line, without spaces or tabs)"
-    echo -e "${GREEN} and run '. ~/update_bl.sh'"
+    echo -e "${GREEN}Blacklist enabled."
+    echo -e "${ORANGE}To update, change ~/blacklist.txt (one hostname/domain per line, without spaces or tabs)"
+    echo -e "${ORANGE}and run '. ~/update_bl.sh'"
 fi
 echo
 echo -e "${GREEN}Installation finished. ✌${NC}"
