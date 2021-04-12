@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 set -o allexport
-version="10"
+version="11"
 beta=0
 blacklist=0
 reset=0
