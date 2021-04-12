@@ -120,7 +120,7 @@ if [[ ! -f ~/.ScreamingFrogSEOSpider/spider.config ]]; then
         STORAGEMODE=""
     fi
     touch ~/.ScreamingFrogSEOSpider/spider.config
-    echo "eula.accepted=10" > ~/.ScreamingFrogSEOSpider/spider.config
+    echo "eula.accepted=11" > ~/.ScreamingFrogSEOSpider/spider.config
     echo "storage.mode=${STORAGEMODE}" >> ~/.ScreamingFrogSEOSpider/spider.config
     echo
 fi
