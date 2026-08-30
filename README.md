@@ -1,3 +1,5 @@
+
+
 # screaming-frog-on-google-compute-engine
 Screaming Frog SEO Spider Install Script by Fili (SEO Expert &amp; ex-Google engineer)
 
@@ -7,7 +9,7 @@ https://searchengineland.com/how-to-run-screaming-frog-seo-spider-in-the-cloud-i
 ## To run
 
 ```
-./install.sh
+./gce-sf.sh
 ```
 
 ## Options
@@ -15,17 +17,17 @@ https://searchengineland.com/how-to-run-screaming-frog-seo-spider-in-the-cloud-i
 The -b option will prompt for the URL of the Screaming Frog SEO Spider package to install. This can be a beta or historic version.
 
 ```
-./install.sh -b
+./gce-sf.sh -b
 ```
 
 The -r option will remove any current installation of Screaming Frog SEO Spider and disable the swap file.
 
 ```
-./install.sh -r
+./gce-sf.sh -r
 ```
 
 Options can be combined.
 
 ```
-./install.sh -r -b
+./gce-sf.sh -r -b
 ```
